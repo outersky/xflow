@@ -1,0 +1,13 @@
+{{if .depts}}
+<table>
+  <thead> <tr> <th>Name</th> </tr> </thead>
+  <tbody>
+    {{range .depts}} <tr> <td>{{.Name}}</td> </tr>
+    {{end}}
+  </tbody>
+</table>
+{{else}}
+<p>
+  No more results
+</p>
+{{end}}

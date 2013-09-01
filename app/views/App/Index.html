@@ -1,18 +1,29 @@
 {{set . "title" "Home"}}
 {{template "header.html" .}}
 
-<header class="hero-unit" style="background-color:#A9F16C">
+<!--
+<header class="hero-unit2" style="background-color:#A9F16C">
   <div class="container">
     <div class="row">
       <div class="hero-text">
         <h1>It works!</h1>
-        <p></p>
       </div>
     </div>
   </div>
 </header>
+-->
 
 <div class="container">
+    <div id="header">
+      <h1>XFlow</h1>
+      {{if .user}}
+        <div id="options">
+          Connected as {{.user.Username}}
+          <a href="{{url "App.Logout"}}">Logout</a>
+        </div>
+      {{end}}
+
+    </div>
   <div class="row">
     <div class="span6">
       {{template "flash.html" .}}
@@ -20,4 +31,142 @@
   </div>
 </div>
 
+<div id="login" class="box">
+    Login: (try with demo/demo)
+
+  <form action="{{url "App.Login"}}" id="formLogin" method="POST">
+    <p class="field">
+      <label>Login Name:</label>
+      <input type="text" name="username" size="19" value="{{.flash.username}}" />
+    </p>
+    <p class="field">
+      <label>Password:</label>
+      <input type="password" name="password" size="19"/>
+    </p>
+    <p class="buttons">
+      <input type="submit" value="Account login" />
+    </p>
+  </form>
+</div>
+
+<div class="box">
+    Register:
+<form action="{{url "App.SaveUser"}}" method="POST">
+  {{with $field := field "user.Username" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Username:</strong>
+      <input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  {{with $field := field "user.Name" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Real name:</strong> <input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  {{with $field := field "user.Password" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Password:</strong> <input type="password" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  {{with $field := field "verifyPassword" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Verify password:</strong> <input type="password" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  {{with $field := field "company.Name" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Company Name:</strong> <input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  {{with $field := field "company.Domain" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Company Domain:</strong> www.<input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  <p class="buttons">
+    <input type="submit" value="Register"> <a href="{{url "App.Index"}}">Cancel</a>
+  </p>
+</form>
+</div>
+
+<div class="box">
+    Add Dept:
+<form action="{{url "App.SaveDept"}}" method="POST">
+{{if .companies}}
+  Company:
+  <select id="companyId" name="companyId">
+    {{range .companies}}
+    <option value="{{.Id}}">{{.Name}}</option>
+    {{end}}
+  </select>
+  <input type="button" id="listDepts" value="List Depts">
+{{else}}
+  No Company
+{{end}}
+  {{with $field := field "dept.Name" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Name:</strong> <input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  <p class="buttons">
+    <input type="submit" value="Add Dept"> 
+  </p>
+  <div id="depts">
+  </div>
+</form>
+
+<script type="text/javascript" charset="utf-8">
+
+  // Search function
+  var search = function() {
+      $.get("/dept/list", {
+        "companyId": $('#companyId').val()
+      }, function(data) {
+          $('#depts').html(data)
+      })
+  }
+
+  // Events handler
+  $('#listDepts').click(function() {
+      search()
+  })
+
+  $('#companyId').change(function() {
+      search()
+  })
+
+</script>
+
+</div>
+
+<div class="box">
+    Staff:
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+</div>
+<div class="box">
+    Staff:
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+    <p>List</p>
+</div>
 {{template "footer.html" .}}
