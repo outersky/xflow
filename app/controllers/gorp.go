@@ -66,6 +66,8 @@ func Init() {
 
 	t = Dbm.AddTable(models.Dept{}).SetKeys(false, "Id")
 
+	t = Dbm.AddTable(models.Employee{}).SetKeys(false, "Id")
+
 	t = Dbm.AddTable(models.Company{}).SetKeys(false, "Id")
 	setColumnSizes(t, map[string]int{
 		"Name":    50,
@@ -90,12 +92,38 @@ func Init() {
     company2.Name="Demo2 Company"
     company2.Domain="demo2.com"
 
-	demoUser := &models.User{models.Base{Id:models.GenId(models.TUser)},"Demo User", "demo", "demo", encode(passwd("demo")),""}
-	demoUser2 := &models.User{models.Base{Id:models.GenId(models.TUser)},"Demo2 User", "demo2", "demo2", encode(passwd("demo2")),""}
+    dept := &models.Dept{}
+    dept.Id = models.GenId(models.TDept)
+    dept.CompanyId = company.Id
+    dept.Name = "HR"
+
+    dept2 := &models.Dept{}
+    dept2.Id = models.GenId(models.TDept)
+    dept2.CompanyId = company2.Id
+    dept2.Name = "IT"
+
+
+    employee := &models.Employee{}
+    employee.Id = models.GenId(models.TEmployee)
+    employee.CompanyId = company.Id
+    employee.DeptId = dept.Id
+    employee.Name = "John"
+    employee.Email = "john@demo.com"
+
+    employee2 := &models.Employee{}
+    employee2.Id = models.GenId(models.TEmployee)
+    employee2.CompanyId = company2.Id
+    employee2.DeptId = dept2.Id
+    employee2.Name = "Rose"
+    employee2.Email = "rose@demo.com"
+
+	demoUser := &models.User{models.Base{Id:models.GenId(models.TUser)},"Demo User", "demo", "demo", encode(passwd("demo")),employee.Id}
     demoUser.CompanyId = company.Id
+
+	demoUser2 := &models.User{models.Base{Id:models.GenId(models.TUser)},"Demo2 User", "demo2", "demo2", encode(passwd("demo2")),employee2.Id}
     demoUser2.CompanyId = company2.Id
 
-	if err := Dbm.Insert(company,company2,demoUser,demoUser2); err != nil {
+	if err := Dbm.Insert(company,company2,dept,dept2,employee,employee2,demoUser,demoUser2); err != nil {
 		panic(err)
 	}
 /*

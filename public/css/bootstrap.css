@@ -2495,10 +2495,12 @@ table [class*=span],
 
 .icon-chevron-left {
   background-position: -432px -72px;
+  width: 25px;
 }
 
 .icon-chevron-right {
   background-position: -456px -72px;
+  width: 25px;
 }
 
 .icon-plus-sign {

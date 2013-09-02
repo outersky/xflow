@@ -14,6 +14,7 @@ const (
 	TUser EntityType = 100 + iota
 	TCompany
 	TDept
+    TEmployee
 )
 
 var r *rand.Rand = rand.New(rand.NewSource(99))
@@ -46,7 +47,7 @@ type User struct {
 	Name               string
 	Username, Password string
 	HashedPassword     string
-	StaffId	string
+	EmployeeId	string
 }
 
 type Dept struct {
@@ -56,7 +57,7 @@ type Dept struct {
 	ParentDeptId string
 }
 
-type Staff struct {
+type Employee struct {
 	Base
 	Name string
 	Code string

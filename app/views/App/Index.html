@@ -37,21 +37,46 @@
   <form action="{{url "App.Login"}}" id="formLogin" method="POST">
     <p class="field">
       <label>Login Name:</label>
-      <input type="text" name="username" size="19" value="{{.flash.username}}" />
+      <input type="text" name="username" id="username" size="19" value="{{.flash.username}}" />
     </p>
     <p class="field">
       <label>Password:</label>
-      <input type="password" name="password" size="19"/>
+      <input type="password" name="password" id="password" size="19"/>
     </p>
     <p class="buttons">
-      <input type="submit" value="Account login" />
+      <input type="button" id="btnLogin" value="Account login" />
     </p>
   </form>
+  <script type="text/javascript" charset="utf-8">
+
+  // Search function
+  var login= function() {
+      $("#formLogin").ajaxSubmit(
+      function(data) {
+          alert(data)
+      })
+  }
+
+  var login2= function() {
+      $.post("{{url "App.Login"}}", {username:$("#username").val(),password:$("#password").val()})
+      .done(function(data) {
+          alert(data)
+      })
+  }
+
+  // Events handler
+  $('#btnLogin').click(function() {
+      login()
+  })
+
+</script>
+
+ 
 </div>
 
 <div class="box">
     Register:
-<form action="{{url "App.SaveUser"}}" method="POST">
+<form action="{{url "User.Add"}}" method="POST" id="formRegister">
   {{with $field := field "user.Username" .}}
     <p class="{{$field.ErrorClass}}">
       <strong>Username:</strong>
@@ -90,14 +115,29 @@
     </p>
   {{end}}
   <p class="buttons">
-    <input type="submit" value="Register"> <a href="{{url "App.Index"}}">Cancel</a>
+    <input type="button" value="Register" id="btnRegister"> <a href="{{url "App.Index"}}">Cancel</a>
   </p>
 </form>
+  <script type="text/javascript" charset="utf-8">
+
+  // Search function
+  var register= function() {
+      $("#formRegister").ajaxSubmit(
+      function(data) {
+          alert(data)
+      })
+  }
+  // Events handler
+  $('#btnRegister').click(function() {
+      register()
+  })
+
+</script>
 </div>
 
 <div class="box">
     Add Dept:
-<form action="{{url "App.SaveDept"}}" method="POST">
+<form action="{{url "Dept.Add"}}" method="POST">
 {{if .companies}}
   Company:
   <select id="companyId" name="companyId">
@@ -126,9 +166,7 @@
 
   // Search function
   var search = function() {
-      $.get("/dept/list", {
-        "companyId": $('#companyId').val()
-      }, function(data) {
+      $.get("{{url "Dept.List"}}", function(data) {
           $('#depts').html(data)
       })
   }
@@ -145,9 +183,8 @@
 </script>
 
 </div>
-
 <div class="box">
-    Staff:
+    Employee List:
     <p>List</p>
     <p>List</p>
     <p>List</p>
@@ -156,17 +193,60 @@
     <p>List</p>
 </div>
 <div class="box">
-    Staff:
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
+    Employee List:
+    Dept:
+<form action="{{url "Employee.Add"}}" method="POST">
+{{if .depts}}
+  Dept:
+  <select id="deptId" name="deptId">
+    {{range .depts}}
+    <option value="{{.Id}}">{{.Name}}</option>
+    {{end}}
+  </select>
+  <input type="button" id="listEmployees" value="List Employees">
+{{else}}
+  No Dept
+{{end}}
+  {{with $field := field "employee.Name" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Name:</strong> <input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  {{with $field := field "employee.Email" .}}
+    <p class="{{$field.ErrorClass}}">
+      <strong>Email:</strong> <input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
+      <span class="error">{{$field.Error}}</span>
+    </p>
+  {{end}}
+  <p class="buttons">
+    <input type="submit" value="Add Employee"> 
+  </p>
+  <div id="employees">
+  </div>
+</form>
+
+<script type="text/javascript" charset="utf-8">
+
+  // Search function
+  var listEmployee = function() {
+      $.get("{{url "Employee.List"}}", {
+        "deptId": $('#deptId').val()
+      }, function(data) {
+          $('#employees').html(data)
+      })
+  }
+
+  // Events handler
+  $('#listEmployees').click(function() {
+      listEmployee()
+  })
+
+  $('#deptId').change(function() {
+      listEmployee()
+  })
+
+</script>
+
 </div>
 {{template "footer.html" .}}

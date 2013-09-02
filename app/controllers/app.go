@@ -8,27 +8,59 @@ import (
 	"github.com/outersky/xflow/app/routes"
 )
 
+
 type App struct {
     GorpController
+    UserId string
+    CompanyId string
+    Roles string
+}
+
+type AuthedApp struct {
+    App
 }
 
 func (c App) Index() revel.Result {
 	revel.INFO.Println("App.Index")
-	var companies []*models.Company
-    companies = loadCompany(c.Txn.Select(models.Company{},
-        `select * from Company `))
-	return c.Render(companies)
+    companies ,_ := c.Txn.Select(models.Company{}, `select * from Company `)
+    depts,_ := c.Txn.Select(models.Dept{}, `select * from Dept`)
+	return c.Render(companies,depts)
 }
 
-func (c App) AddUser() revel.Result {
+func (c *App) AddUser() revel.Result {
 	fmt.Printf("... App.AddUser() .\n")
 
-	if user := c.connected(); user != nil {
-		c.RenderArgs["user"] = user
-	}
+    c.UserId = c.loadUserId()
+    c.CompanyId = c.loadCompanyId()
+
 	return nil
 }
 
+func (c App) loadUserId() string {
+	if userId, ok := c.Session["UserId"]; ok {
+        fmt.Printf(" UserId loaded : %s\n", userId)
+		return userId
+	}
+	return ""
+}
+
+func (c App) loadCompanyId() string {
+	if companyId, ok := c.Session["CompanyId"]; ok {
+        fmt.Printf(" CompanyId loaded : %s\n", companyId)
+		return companyId
+	}
+	return ""
+}
+
+func (c AuthedApp) CheckAuth() revel.Result {
+    fmt.Printf("... AuthedApp.CheckAuth() : %s .\n",c.UserId)
+    if c.UserId == "" {
+        return c.RenderJson(Error("Not Logged"))
+    }
+    return nil
+}
+
+/*
 func (c App) connected() *models.User {
 	if c.RenderArgs["user"] != nil {
 		return c.RenderArgs["user"].(*models.User)
@@ -38,6 +70,8 @@ func (c App) connected() *models.User {
 	}
 	return nil
 }
+
+*/
 
 func (c App) getUser(username string) *models.User {
 	users, err := c.Txn.Select(models.User{}, `select * from User where Username = ?`, username)
@@ -56,14 +90,15 @@ func (c App) Login(username, password string) revel.Result {
 		err := bcrypt.CompareHashAndPassword(decode(user.HashedPassword), []byte(password))
 		if err == nil {
 			c.Session["user"] = username
-			c.Flash.Success("Welcome, " + username)
-			return c.Redirect(routes.App.Index())
+			c.Session["UserId"] = user.Id
+			c.Session["CompanyId"] = user.CompanyId
+            return c.RenderJson(Single(user))
 		}
 	}
 
 	c.Flash.Out["username"] = username
 	c.Flash.Error("Login failed")
-	return c.Redirect(routes.App.Index())
+    return c.RenderJson(Error("Login ERROR"))
 }
 
 func (c App) Logout() revel.Result {
@@ -73,61 +108,3 @@ func (c App) Logout() revel.Result {
 	return c.Redirect(routes.App.Index())
 }
 
-
-func (c App) SaveUser(user models.User, verifyPassword string, company models.Company) revel.Result {
-	c.Validation.Required(verifyPassword)
-	c.Validation.Required(verifyPassword == user.Password).  Message("Password does not match")
-	user.Validate(c.Validation)
-	c.Validation.Required(company.Name)
-	c.Validation.Required(company.Domain)
-
-	if c.Validation.HasErrors() {
-		c.Validation.Keep()
-		c.FlashParams()
-		return c.Redirect(routes.App.Index())
-	}
-
-    //pwd, _ := bcrypt.GenerateFromPassword( []byte(user.Password), bcrypt.DefaultCost)
-	user.HashedPassword = encode(passwd(user.Password))
-    company.Id = models.GenId(models.TCompany)
-    company.CompanyId = company.Id
-    user.Id = models.GenId(models.TUser)
-    user.CompanyId = company.Id
-	err := c.Txn.Insert(&user, &company)
-	if err != nil {
-		panic(err)
-	}
-
-	c.Session["user"] = user.Username
-	c.Flash.Success("Welcome, " + user.Name)
-	return c.Redirect(routes.App.Index())
-}
-
-func loadCompany(results []interface{}, err error) []*models.Company{
-	if err != nil {
-		panic(err)
-	}
-	var companies []*models.Company
-	for _, r := range results {
-		companies = append(companies, r.(*models.Company))
-	}
-	return companies
-}
-
-func (c App) SaveDept(dept models.Dept, companyId string) revel.Result {
-	c.Validation.Required(dept.Name)
-
-	if c.Validation.HasErrors() {
-		c.Validation.Keep()
-		c.FlashParams()
-		return c.Redirect(routes.App.Index())
-	}
-
-    dept.Id = models.GenId(models.TDept)
-    dept.CompanyId = companyId
-	err := c.Txn.Insert(&dept)
-	if err != nil {
-		panic(err)
-	}
-	return c.Redirect(routes.App.Index())
-}

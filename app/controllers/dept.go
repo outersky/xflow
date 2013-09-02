@@ -1,5 +1,5 @@
 package controllers
-
+/*
 import (
     "github.com/robfig/revel"
 	"github.com/outersky/xflow/app/models"
@@ -12,10 +12,9 @@ type Dept struct {
 
 func (c Dept) List (companyId string) revel.Result {
 	revel.INFO.Println("Dept.List")
-	var depts []*models.Dept
-    depts = loadDept(c.Txn.Select(models.Dept{},
-        `select * from Dept where CompanyId = ? `, companyId))
-	return c.Render(depts)
+    depts, _ := c.Txn.Select(models.Dept{},
+        `select * from Dept where CompanyId = ? `, companyId)
+	return c.RenderJson(List(depts))
 }
 
 func loadDept(results []interface{}, err error) []*models.Dept{
@@ -28,4 +27,4 @@ func loadDept(results []interface{}, err error) []*models.Dept{
 	}
 	return depts
 }
-
+*/

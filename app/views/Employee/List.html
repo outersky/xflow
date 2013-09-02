@@ -1,0 +1,13 @@
+{{if .employees}}
+<table>
+  <thead> <tr> <th>Name</th> </tr> </thead>
+  <tbody>
+    {{range .employees}} <tr> <td>{{.Name}}</td> </tr>
+    {{end}}
+  </tbody>
+</table>
+{{else}}
+<p>
+  No more Employee
+</p>
+{{end}}
