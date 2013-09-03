@@ -35,7 +35,7 @@ func (c *Dept) ListOfCompany(companyId string) revel.Result {
 	return c.RenderJson(List(depts))
 }
 
-func (c *Dept) Add(dept models.Dept, companyId string) revel.Result {
+func (c *Dept) Add(dept models.Dept) revel.Result {
 	c.Validation.Required(dept.Name)
 
 	if c.Validation.HasErrors() {
@@ -44,7 +44,7 @@ func (c *Dept) Add(dept models.Dept, companyId string) revel.Result {
 	}
 
 	dept.Id = models.GenId(models.TDept)
-	dept.CompanyId = companyId
+	dept.CompanyId = c.CompanyId
 	err := c.Txn.Insert(&dept)
 	if err != nil {
 		panic(err)

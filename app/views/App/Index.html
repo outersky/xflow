@@ -31,7 +31,7 @@
   </div>
 </div>
 
-1: Login <button id="btnLogin">Login</button>
+Login <button id="btnLogin">Login</button><br/>
 
 <div id="winLogin">
   <form action="{{url "App.Login"}}" id="formLogin" method="POST">
@@ -100,7 +100,7 @@
 </script>
 </div>
 
-2: CheckLogin <button id="btnCheckLogin">CheckLogin</button> <span id="loginInfo"></span>
+CheckLogin <button id="btnCheckLogin">CheckLogin</button> <span id="loginInfo"></span> <br/>
 
   <script type="text/javascript" charset="utf-8">
     $(function() {
@@ -119,7 +119,7 @@
     });
 </script>
 
-3: Logout <button id="btnLogout">Logout</button> 
+Logout <button id="btnLogout">Logout</button> <br/>
 
   <script type="text/javascript" charset="utf-8">
     $(function() {
@@ -135,7 +135,8 @@
 			});
     });
 </script>
-4: Register <button id="btnRegister">Register</button>
+
+Register <button id="btnRegister">Register</button><br/>
 <div id="winRegister">
 <form action="{{url "User.Add"}}" method="POST" id="formRegister">
   {{with $field := field "user.Username" .}}
@@ -210,76 +211,108 @@
     });
 </script>
 </div>
+<hr/>
 
-5: Add Dept<button id="btnAddDept">Add Dept</button>
-<div id="winAddDept" >
-<form action="{{url "Dept.Add"}}" method="POST">
-{{if .companies}}
-  Company:
-  <select id="companyId" name="companyId">
-    {{range .companies}}
-    <option value="{{.Id}}">{{.Name}}</option>
-    {{end}}
-  </select>
-  <input type="button" id="listDepts" value="List Depts">
-{{else}}
-  No Company
-{{end}}
-  {{with $field := field "dept.Name" .}}
-    <p class="{{$field.ErrorClass}}">
-      <strong>Name:</strong> <input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
-      <span class="error">{{$field.Error}}</span>
-    </p>
-  {{end}}
-  <div id="depts">
-  </div>
-</form>
-
+List Dept <button id="btnListDept">List Dept</button>
+  <select id="deptId" name="deptId">
+  </select><br/>
 <script type="text/javascript" charset="utf-8">
+    $(function() {
+        $( "#btnListDept" )
+			.button()
+			.click(function() {
 
-  // Search function
-  var search = function() {
-      $.get("{{url "Dept.List"}}", function(data) {
-          $('#depts').html(data)
-      })
-  }
-
-  // Events handler
-  $('#listDepts').click(function() {
-      search()
-  })
-
-  $('#companyId').change(function() {
-      search()
-  })
-
+              $.get("{{url "Dept.List"}}", function(data) {
+                  if(data.Success){
+                      var lists = $("select[name=deptId]");
+                      for(var j=0; j<lists.length; j++){
+                          var list = lists[j];
+                          list.options.length=0;
+                          for(var i=0; i<data.Result.length; i++){
+                            list.options[i] = new Option(data.Result[i].Name,data.Result[i].Id);
+                          }
+                      }
+                  }
+              })
+			});
+    });
 </script>
 
+Add Dept<button id="btnAddDept">Add Dept</button><br/>
+<div id="winAddDept" >
+<form action="{{url "Dept.Add"}}" method="POST" id="formAddDept">
+      <strong>Name:</strong> <input type="text" name="dept.Name" size="16" > *
+</form>
 </div>
-<div class="box">
-    Employee List:
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-    <p>List</p>
-</div>
-<div class="box">
-    Employee List:
-    Dept:
-<form action="{{url "Employee.Add"}}" method="POST">
-{{if .depts}}
+<script type="text/javascript" charset="utf-8">
+    $(function() {
+        $( "#winAddDept" ).dialog({
+			autoOpen: false,
+            title:'Add Dept',
+			height: 200,
+			width: 500,
+			modal: true,
+            buttons:{
+                "Add Dept":function(){
+                  var me = $(this);
+                  $("#formAddDept").ajaxSubmit(
+                  function(data) {
+                    if(data.Success){
+                        $("#btnListDept").click();
+                    }else{
+                        alert("Register Error");
+                    }
+                    me.dialog("close");
+                  })
+                },
+                "Cancel":function(){
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+        $( "#btnAddDept" )
+			.button()
+			.click(function() {
+				$( "#winAddDept" ).dialog( "open" );
+			});
+    });
+</script>
+<hr/>
+List Employee
+  <select id="deptIdForList" name="deptId">
+  </select>
+  <button id="btnListEmployee">List Employees</button>
+  <select id="employeeId" name="employeeId">
+  </select>
+<script type="text/javascript" charset="utf-8">
+    $(function() {
+        $( "#btnListEmployee" )
+			.button()
+			.click(function() {
+
+                $.get("{{url "Employee.List"}}?deptId="+$("#deptIdForList").val(), function(data) {
+                  if(data.Success){
+                      var lists = $("select[name=employeeId]");
+                      for(var j=0; j<lists.length; j++){
+                          var list = lists[j];
+                          list.options.length=0;
+                          for(var i=0; i<data.Result.length; i++){
+                            list.options[i] = new Option(data.Result[i].Name,data.Result[i].Id);
+                          }
+                      }
+                  }
+              })
+			});
+    });
+</script>
+<br/>
+
+Add Employee<button id="btnAddEmployee">Add Employee</button><br/>
+<div id="winAddEmployee">
+<form action="{{url "Employee.Add"}}" id="formAddEmployee" method="POST">
   Dept:
   <select id="deptId" name="deptId">
-    {{range .depts}}
-    <option value="{{.Id}}">{{.Name}}</option>
-    {{end}}
   </select>
-  <input type="button" id="listEmployees" value="List Employees">
-{{else}}
-  No Dept
-{{end}}
   {{with $field := field "employee.Name" .}}
     <p class="{{$field.ErrorClass}}">
       <strong>Name:</strong> <input type="text" name="{{$field.Name}}" size="16" value="{{$field.Flash}}"> *
@@ -292,33 +325,40 @@
       <span class="error">{{$field.Error}}</span>
     </p>
   {{end}}
-  <p class="buttons">
-    <input type="submit" value="Add Employee"> 
-  </p>
-  <div id="employees">
-  </div>
 </form>
 
 <script type="text/javascript" charset="utf-8">
-
-  // Search function
-  var listEmployee = function() {
-      $.get("{{url "Employee.List"}}", {
-        "deptId": $('#deptId').val()
-      }, function(data) {
-          $('#employees').html(data)
-      })
-  }
-
-  // Events handler
-  $('#listEmployees').click(function() {
-      listEmployee()
-  })
-
-  $('#deptId').change(function() {
-      listEmployee()
-  })
-
+    $(function() {
+        $( "#winAddEmployee" ).dialog({
+			autoOpen: false,
+            title:'Add Employee',
+			height: 300,
+			width: 500,
+			modal: true,
+            buttons:{
+                "Add Employee":function(){
+                  var me = $(this);
+                  $("#formAddEmployee").ajaxSubmit(
+                  function(data) {
+                    if(data.Success){
+                        alert("Add OK");
+                    }else{
+                        alert("Add Error");
+                    }
+                    me.dialog("close");
+                  })
+                },
+                "Cancel":function(){
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+        $( "#btnAddEmployee" )
+			.button()
+			.click(function() {
+				$( "#winAddEmployee" ).dialog( "open" );
+			});
+    });
 </script>
 
 </div>
