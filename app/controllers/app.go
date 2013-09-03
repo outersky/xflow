@@ -4,13 +4,13 @@ import (
 	"code.google.com/p/go.crypto/bcrypt"
 	"fmt"
 	"github.com/outersky/xflow/app/models"
-	"github.com/outersky/xflow/app/routes"
 	"github.com/robfig/revel"
 )
 
 type App struct {
 	GorpController
 	UserId    string
+    UserName  string
 	CompanyId string
 	Roles     string
 }
@@ -26,13 +26,39 @@ func (c *App) Index() revel.Result {
 	return c.Render(companies, depts)
 }
 
+func (c *App) Services() revel.Result {
+    return c.Render()
+}
+
 func (c *App) AddUser() revel.Result {
 	fmt.Printf("... App.AddUser() .\n")
 
+	c.UserName = c.loadUserName()
 	c.UserId = c.loadUserId()
 	c.CompanyId = c.loadCompanyId()
 
 	return nil
+}
+
+func (c *App) Current() revel.Result{
+    if(c.UserId==""){
+        return c.RenderJson(Error("NotLogged"))
+    }else{
+        m := map[string]string{
+            "UserName":c.UserName,
+            "UserId":c.UserId,
+            "CompanyId":c.CompanyId,
+        }
+        return c.RenderJson(Single(m))
+    }
+}
+
+func (c *App) loadUserName() string {
+	if userName, ok := c.Session["UserName"]; ok {
+		fmt.Printf(" UserName loaded : %s\n", userName)
+		return userName
+	}
+	return ""
 }
 
 func (c *App) loadUserId() string {
@@ -88,7 +114,7 @@ func (c *App) Login(username, password string) revel.Result {
 	if user != nil {
 		err := bcrypt.CompareHashAndPassword(decode(user.HashedPassword), []byte(password))
 		if err == nil {
-			c.Session["user"] = username
+			c.Session["UserName"] = username
 			c.Session["UserId"] = user.Id
 			c.Session["CompanyId"] = user.CompanyId
 			return c.RenderJson(Single(user))
@@ -104,5 +130,5 @@ func (c *App) Logout() revel.Result {
 	for k := range c.Session {
 		delete(c.Session, k)
 	}
-	return c.Redirect(routes.App.Index())
+	return c.RenderJson(Single("OK"))
 }

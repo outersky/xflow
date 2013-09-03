@@ -31,9 +31,9 @@
   </div>
 </div>
 
-<div id="login" class="box">
-    Login: (try with demo/demo)
+1: Login <button id="btnLogin">Login</button>
 
+<div id="winLogin">
   <form action="{{url "App.Login"}}" id="formLogin" method="POST">
     <p class="field">
       <label>Login Name:</label>
@@ -43,12 +43,9 @@
       <label>Password:</label>
       <input type="password" name="password" id="password" size="19"/>
     </p>
-    <p class="buttons">
-      <input type="button" id="btnLogin" value="Account login" />
-    </p>
   </form>
   <script type="text/javascript" charset="utf-8">
-
+/*
   // Search function
   var login= function() {
       $("#formLogin").ajaxSubmit(
@@ -68,14 +65,78 @@
   $('#btnLogin').click(function() {
       login()
   })
-
+*/
+    $(function() {
+        $( "#winLogin" ).dialog({
+			autoOpen: false,
+            title:'Login (demo/demo)',
+			height: 300,
+			width: 350,
+			modal: true,
+            buttons:{
+                "Login":function(){
+                  var me = $(this);
+                  $("#formLogin").ajaxSubmit(
+                  function(data) {
+                    if(data.Success){
+                        alert(data.Result.Username + "/" + data.Result.CompanyId);
+                    }else{
+                        alert("Login Error");
+                    }
+                    me.dialog("close");
+                  })
+                },
+                "Cancel":function(){
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+        $( "#btnLogin" )
+			.button()
+			.click(function() {
+				$( "#winLogin" ).dialog( "open" );
+			});
+    });
 </script>
-
- 
 </div>
 
-<div class="box">
-    Register:
+2: CheckLogin <button id="btnCheckLogin">CheckLogin</button> <span id="loginInfo"></span>
+
+  <script type="text/javascript" charset="utf-8">
+    $(function() {
+        $( "#btnCheckLogin" )
+			.button()
+			.click(function() {
+                $.get("{{url "App.Current"}}")
+                .done(function(data){
+                    if(data.Success){
+                        $("#loginInfo").html(data.Result.UserName);
+                    }else{
+                        $("#loginInfo").html("Not Logged!");
+                    }
+                });
+			});
+    });
+</script>
+
+3: Logout <button id="btnLogout">Logout</button> 
+
+  <script type="text/javascript" charset="utf-8">
+    $(function() {
+        $( "#btnLogout" )
+			.button()
+			.click(function() {
+                $.get("{{url "App.Logout"}}")
+                .done(function(data){
+                    if(data.Success){
+                        $("#loginInfo").html("Not Logged!");
+                    }
+                });
+			});
+    });
+</script>
+4: Register <button id="btnRegister">Register</button>
+<div id="winRegister">
 <form action="{{url "User.Add"}}" method="POST" id="formRegister">
   {{with $field := field "user.Username" .}}
     <p class="{{$field.ErrorClass}}">
@@ -114,29 +175,44 @@
       <span class="error">{{$field.Error}}</span>
     </p>
   {{end}}
-  <p class="buttons">
-    <input type="button" value="Register" id="btnRegister"> <a href="{{url "App.Index"}}">Cancel</a>
-  </p>
 </form>
   <script type="text/javascript" charset="utf-8">
-
-  // Search function
-  var register= function() {
-      $("#formRegister").ajaxSubmit(
-      function(data) {
-          alert(data)
-      })
-  }
-  // Events handler
-  $('#btnRegister').click(function() {
-      register()
-  })
-
+    $(function() {
+        $( "#winRegister" ).dialog({
+			autoOpen: false,
+            title:'Register',
+			height: 500,
+			width: 500,
+			modal: true,
+            buttons:{
+                "Register":function(){
+                  var me = $(this);
+                  $("#formRegister").ajaxSubmit(
+                  function(data) {
+                    if(data.Success){
+                        alert(data.Result.Username + "/" + data.Result.CompanyId);
+                    }else{
+                        alert("Register Error");
+                    }
+                    me.dialog("close");
+                  })
+                },
+                "Cancel":function(){
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+        $( "#btnRegister" )
+			.button()
+			.click(function() {
+				$( "#winRegister" ).dialog( "open" );
+			});
+    });
 </script>
 </div>
 
-<div class="box">
-    Add Dept:
+5: Add Dept<button id="btnAddDept">Add Dept</button>
+<div id="winAddDept" >
 <form action="{{url "Dept.Add"}}" method="POST">
 {{if .companies}}
   Company:
@@ -155,9 +231,6 @@
       <span class="error">{{$field.Error}}</span>
     </p>
   {{end}}
-  <p class="buttons">
-    <input type="submit" value="Add Dept"> 
-  </p>
   <div id="depts">
   </div>
 </form>
