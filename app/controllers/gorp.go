@@ -1,25 +1,25 @@
 package controllers
 
 import (
-	"fmt"
-	"reflect"
-    "encoding/base64"
 	"code.google.com/p/go.crypto/bcrypt"
 	"database/sql"
+	"encoding/base64"
+	"fmt"
 	"github.com/coopernurse/gorp"
-    _ "github.com/ziutek/mymysql/godrv"
+	_ "github.com/ziutek/mymysql/godrv"
+	"reflect"
 
 	// _ "github.com/mattn/go-sqlite3"
+	"github.com/outersky/xflow/app/models"
 	r "github.com/robfig/revel"
 	"github.com/robfig/revel/modules/db/app"
-	"github.com/outersky/xflow/app/models"
 )
 
 var (
 	Dbm *gorp.DbMap
 )
 
-func Dbg(){
+func Dbg() {
 	t := reflect.TypeOf(models.User{})
 	n := t.NumField()
 	for i := 0; i < n; i++ {
@@ -28,17 +28,17 @@ func Dbg(){
 	}
 }
 func encode(src []byte) string {
-    return base64.StdEncoding.EncodeToString(src)
+	return base64.StdEncoding.EncodeToString(src)
 }
 
-func decode(src string) []byte{
-    data,_ := base64.StdEncoding.DecodeString(src)
-    return data
+func decode(src string) []byte {
+	data, _ := base64.StdEncoding.DecodeString(src)
+	return data
 }
 
-func passwd(src string) []byte{
-	bcryptPassword, _ := bcrypt.GenerateFromPassword( []byte(src), bcrypt.DefaultCost )
-    return bcryptPassword
+func passwd(src string) []byte {
+	bcryptPassword, _ := bcrypt.GenerateFromPassword([]byte(src), bcrypt.DefaultCost)
+	return bcryptPassword
 }
 
 func Init() {
@@ -70,73 +70,72 @@ func Init() {
 
 	t = Dbm.AddTable(models.Company{}).SetKeys(false, "Id")
 	setColumnSizes(t, map[string]int{
-		"Name":    50,
+		"Name": 50,
 	})
 
 	Dbm.TraceOn("[gorp]", r.INFO)
 	Dbm.DropTables()
 	Dbm.CreateTables()
 
-//	bcryptPassword, _ := bcrypt.GenerateFromPassword(
-//		[]byte("demo"), bcrypt.DefaultCost)
+	//	bcryptPassword, _ := bcrypt.GenerateFromPassword(
+	//		[]byte("demo"), bcrypt.DefaultCost)
 
-    company := &models.Company{}
-    company.Id = models.GenId(models.TCompany)
-    company.CompanyId = company.Id
-    company.Name="Demo Company"
-    company.Domain="demo.com"
+	company := &models.Company{}
+	company.Id = models.GenId(models.TCompany)
+	company.CompanyId = company.Id
+	company.Name = "Demo Company"
+	company.Domain = "demo.com"
 
-    company2 := &models.Company{}
-    company2.Id = models.GenId(models.TCompany)
-    company2.CompanyId = company2.Id
-    company2.Name="Demo2 Company"
-    company2.Domain="demo2.com"
+	company2 := &models.Company{}
+	company2.Id = models.GenId(models.TCompany)
+	company2.CompanyId = company2.Id
+	company2.Name = "Demo2 Company"
+	company2.Domain = "demo2.com"
 
-    dept := &models.Dept{}
-    dept.Id = models.GenId(models.TDept)
-    dept.CompanyId = company.Id
-    dept.Name = "HR"
+	dept := &models.Dept{}
+	dept.Id = models.GenId(models.TDept)
+	dept.CompanyId = company.Id
+	dept.Name = "HR"
 
-    dept2 := &models.Dept{}
-    dept2.Id = models.GenId(models.TDept)
-    dept2.CompanyId = company2.Id
-    dept2.Name = "IT"
+	dept2 := &models.Dept{}
+	dept2.Id = models.GenId(models.TDept)
+	dept2.CompanyId = company2.Id
+	dept2.Name = "IT"
 
+	employee := &models.Employee{}
+	employee.Id = models.GenId(models.TEmployee)
+	employee.CompanyId = company.Id
+	employee.DeptId = dept.Id
+	employee.Name = "John"
+	employee.Email = "john@demo.com"
 
-    employee := &models.Employee{}
-    employee.Id = models.GenId(models.TEmployee)
-    employee.CompanyId = company.Id
-    employee.DeptId = dept.Id
-    employee.Name = "John"
-    employee.Email = "john@demo.com"
+	employee2 := &models.Employee{}
+	employee2.Id = models.GenId(models.TEmployee)
+	employee2.CompanyId = company2.Id
+	employee2.DeptId = dept2.Id
+	employee2.Name = "Rose"
+	employee2.Email = "rose@demo.com"
 
-    employee2 := &models.Employee{}
-    employee2.Id = models.GenId(models.TEmployee)
-    employee2.CompanyId = company2.Id
-    employee2.DeptId = dept2.Id
-    employee2.Name = "Rose"
-    employee2.Email = "rose@demo.com"
+	demoUser := &models.User{models.Base{Id: models.GenId(models.TUser)}, "Demo User", "demo", "demo", encode(passwd("demo")), employee.Id}
+	demoUser.CompanyId = company.Id
 
-	demoUser := &models.User{models.Base{Id:models.GenId(models.TUser)},"Demo User", "demo", "demo", encode(passwd("demo")),employee.Id}
-    demoUser.CompanyId = company.Id
+	demoUser2 := &models.User{models.Base{Id: models.GenId(models.TUser)}, "Demo2 User", "demo2", "demo2", encode(passwd("demo2")), employee2.Id}
+	demoUser2.CompanyId = company2.Id
 
-	demoUser2 := &models.User{models.Base{Id:models.GenId(models.TUser)},"Demo2 User", "demo2", "demo2", encode(passwd("demo2")),employee2.Id}
-    demoUser2.CompanyId = company2.Id
-
-	if err := Dbm.Insert(company,company2,dept,dept2,employee,employee2,demoUser,demoUser2); err != nil {
+	if err := Dbm.Insert(company, company2, dept, dept2, employee, employee2, demoUser, demoUser2); err != nil {
 		panic(err)
 	}
-/*
-	hotels := []*models.Hotel{
-		&models.Hotel{0, "Marriott Courtyard", "Tower Pl, Buckhead", "Atlanta", "GA", "30305", "USA", 120},
-		&models.Hotel{0, "W Hotel", "Union Square, Manhattan", "New York", "NY", "10011", "USA", 450},
-		&models.Hotel{0, "Hotel Rouge", "1315 16th St NW", "Washington", "DC", "20036", "USA", 250},
-	}
-	for _, hotel := range hotels {
-		if err := Dbm.Insert(hotel); err != nil {
-			panic(err)
+	/*
+		hotels := []*models.Hotel{
+			&models.Hotel{0, "Marriott Courtyard", "Tower Pl, Buckhead", "Atlanta", "GA", "30305", "USA", 120},
+			&models.Hotel{0, "W Hotel", "Union Square, Manhattan", "New York", "NY", "10011", "USA", 450},
+			&models.Hotel{0, "Hotel Rouge", "1315 16th St NW", "Washington", "DC", "20036", "USA", 250},
 		}
-	}*/
+		for _, hotel := range hotels {
+			if err := Dbm.Insert(hotel); err != nil {
+				panic(err)
+			}
+		}*/
 	Dbm.TraceOff()
 }
 

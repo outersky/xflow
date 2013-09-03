@@ -1,63 +1,62 @@
 package controllers
 
 import (
-    "fmt"
 	"code.google.com/p/go.crypto/bcrypt"
-    "github.com/robfig/revel"
+	"fmt"
 	"github.com/outersky/xflow/app/models"
 	"github.com/outersky/xflow/app/routes"
+	"github.com/robfig/revel"
 )
 
-
 type App struct {
-    GorpController
-    UserId string
-    CompanyId string
-    Roles string
+	GorpController
+	UserId    string
+	CompanyId string
+	Roles     string
 }
 
 type AuthedApp struct {
-    App
+	App
 }
 
-func (c App) Index() revel.Result {
+func (c *App) Index() revel.Result {
 	revel.INFO.Println("App.Index")
-    companies ,_ := c.Txn.Select(models.Company{}, `select * from Company `)
-    depts,_ := c.Txn.Select(models.Dept{}, `select * from Dept`)
-	return c.Render(companies,depts)
+	companies, _ := c.Txn.Select(models.Company{}, `select * from Company `)
+	depts, _ := c.Txn.Select(models.Dept{}, `select * from Dept`)
+	return c.Render(companies, depts)
 }
 
 func (c *App) AddUser() revel.Result {
 	fmt.Printf("... App.AddUser() .\n")
 
-    c.UserId = c.loadUserId()
-    c.CompanyId = c.loadCompanyId()
+	c.UserId = c.loadUserId()
+	c.CompanyId = c.loadCompanyId()
 
 	return nil
 }
 
-func (c App) loadUserId() string {
+func (c *App) loadUserId() string {
 	if userId, ok := c.Session["UserId"]; ok {
-        fmt.Printf(" UserId loaded : %s\n", userId)
+		fmt.Printf(" UserId loaded : %s\n", userId)
 		return userId
 	}
 	return ""
 }
 
-func (c App) loadCompanyId() string {
+func (c *App) loadCompanyId() string {
 	if companyId, ok := c.Session["CompanyId"]; ok {
-        fmt.Printf(" CompanyId loaded : %s\n", companyId)
+		fmt.Printf(" CompanyId loaded : %s\n", companyId)
 		return companyId
 	}
 	return ""
 }
 
-func (c AuthedApp) CheckAuth() revel.Result {
-    fmt.Printf("... AuthedApp.CheckAuth() : %s .\n",c.UserId)
-    if c.UserId == "" {
-        return c.RenderJson(Error("Not Logged"))
-    }
-    return nil
+func (c *AuthedApp) CheckAuth() revel.Result {
+	fmt.Printf("... AuthedApp.CheckAuth() : %s .\n", c.UserId)
+	if c.UserId == "" {
+		return c.RenderJson(Error("Not Logged"))
+	}
+	return nil
 }
 
 /*
@@ -73,7 +72,7 @@ func (c App) connected() *models.User {
 
 */
 
-func (c App) getUser(username string) *models.User {
+func (c *App) getUser(username string) *models.User {
 	users, err := c.Txn.Select(models.User{}, `select * from User where Username = ?`, username)
 	if err != nil {
 		panic(err)
@@ -84,7 +83,7 @@ func (c App) getUser(username string) *models.User {
 	return users[0].(*models.User)
 }
 
-func (c App) Login(username, password string) revel.Result {
+func (c *App) Login(username, password string) revel.Result {
 	user := c.getUser(username)
 	if user != nil {
 		err := bcrypt.CompareHashAndPassword(decode(user.HashedPassword), []byte(password))
@@ -92,19 +91,18 @@ func (c App) Login(username, password string) revel.Result {
 			c.Session["user"] = username
 			c.Session["UserId"] = user.Id
 			c.Session["CompanyId"] = user.CompanyId
-            return c.RenderJson(Single(user))
+			return c.RenderJson(Single(user))
 		}
 	}
 
 	c.Flash.Out["username"] = username
 	c.Flash.Error("Login failed")
-    return c.RenderJson(Error("Login ERROR"))
+	return c.RenderJson(Error("Login ERROR"))
 }
 
-func (c App) Logout() revel.Result {
+func (c *App) Logout() revel.Result {
 	for k := range c.Session {
 		delete(c.Session, k)
 	}
 	return c.Redirect(routes.App.Index())
 }
-
